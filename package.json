@@ -22,7 +22,7 @@
     ],
     "keybindings": [{
       "command": "go-errutil.return",
-      "key": "ctrl+shift+e",
+      "key": "cmd+shift+e",
       "when": "editorTextFocus && editorLangId == 'go'"
     }]
   },
