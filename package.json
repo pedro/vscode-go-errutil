@@ -43,7 +43,8 @@
     "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src --ext ts",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "build": "vsce package --yarn"
   },
   "devDependencies": {
     "@types/vscode": "^1.92.0",
