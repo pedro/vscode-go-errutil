@@ -11,11 +11,36 @@ export function activate(context: vscode.ExtensionContext) {
     const document = editor.document;
     const position = editor.selection.active;
 
-    const line = document.lineAt(position.line);
-    const indent = line.text.match(/^\s*/)?.[0] || '';
+    const textBeforeCursor = document.getText(new vscode.Range(new vscode.Position(0, 0), position));
 
+    const funcRegex = /func\s+\w+\s*\([^)]*\)\s*(\([^)]+\)|\w+)?/g;
+    let match;
+    let lastFuncMatch = null;
+
+    while ((match = funcRegex.exec(textBeforeCursor)) !== null) {
+      lastFuncMatch = match;
+    }
+
+    if (!lastFuncMatch) {
+      vscode.window.showErrorMessage('No function definition found above the cursor.');
+      return;
+    }
+
+    const returnTypes = extractReturnTypes(lastFuncMatch[1]);
+    console.log("got", returnTypes);
+
+    if (returnTypes.length === 0 || returnTypes[returnTypes.length - 1] !== 'error') {
+      vscode.window.showErrorMessage('Function does not return error');
+      return;
+    }
+    let emptyValues = returnTypes.slice(0, -1).map(type => getZeroValueForType(type)).join(', ');
+    if (emptyValues.length > 0) {
+      emptyValues += ', ';
+    }
+
+    // Insert only the return statement with the correct values and errutil.With(err)
     const snippet = new vscode.SnippetString(
-      `return ${getReturnStatementPlaceholder()}`
+      `return ${emptyValues}errutil.With(err)`
     );
 
     editor.insertSnippet(snippet, position);
@@ -26,6 +51,40 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {}
 
-function getReturnStatementPlaceholder(): string {
-  return '${2:bar{}}, ${3:nil}, errutil.With(err)';
+function extractReturnTypes(signature: string | undefined): string[] {
+  if (!signature) {
+    return [];
+  }
+
+  // Remove parentheses if present
+  signature = signature.trim();
+  if (signature.startsWith('(') && signature.endsWith(')')) {
+    signature = signature.slice(1, -1);
+  }
+
+  // Split the signature into individual types
+  return signature.split(',').map(type => type.trim().replace(/([\w\d]+\s)/g, ''));
+}
+
+function getZeroValueForType(type: string): string {
+  switch (type) {
+    case 'int':
+    case 'float64':
+    case 'float32':
+    case 'uint':
+    case 'uint8':
+    case 'uint16':
+    case 'uint32':
+    case 'uint64':
+      return '0';
+    case 'string':
+      return '""';
+    case 'bool':
+      return 'false';
+    default:
+      if (type.endsWith('[]')) {
+        return 'nil';
+      }
+      return 'nil'; // Default for pointers, slices, maps, etc.
+  }
 }
