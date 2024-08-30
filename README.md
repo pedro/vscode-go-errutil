@@ -18,7 +18,7 @@ You can run that command to type the return statement for you:
 
 ```diff
 func a() (int, string, *p, error) {
-	if err := x(); err != nil {
+  if err := x(); err != nil {
 +    return 0, "", nil, errutil.With(err)
   }
 }
@@ -28,7 +28,7 @@ This is a super ghetto work in progress.
 
 ## Installation
 
-Download `go-errutil-0.0.1.vsix`, then in VS Code:
+Download `go-errutil.vsix` from releases, then in VS Code:
 
 - open "Extensions"
 - Click the three dots
