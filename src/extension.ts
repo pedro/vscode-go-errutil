@@ -12,7 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const textBeforeCursor = document.getText(new vscode.Range(new vscode.Position(0, 0), position));
 
-    const funcRegex = /func\s+\w+\s*\([^)]*\)\s*(\([^)]+\)|\w+)?/g;
+    const funcRegex = /func\s+(\([^)]+\)\s+)?\w+\s*\([^)]*\)\s*(\([^)]+\)|\w+)?/g;
     let match;
     let lastFuncMatch = null;
 
@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
 
-    const returnTypes = extractReturnTypes(lastFuncMatch[1]);
+    const returnTypes = extractReturnTypes(lastFuncMatch[2]);
 
     if (returnTypes.length === 0 || returnTypes[returnTypes.length - 1] !== 'error') {
       vscode.window.showErrorMessage('Function does not return error');
@@ -36,9 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
       emptyValues += ', ';
     }
 
-    // Insert only the return statement with the correct values and errutil.With(err)
     const snippet = new vscode.SnippetString(`return ${emptyValues}errutil.With(err)`);
-
     editor.insertSnippet(snippet, position);
 	});
 
