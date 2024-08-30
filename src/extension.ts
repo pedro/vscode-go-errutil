@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
-	const disposable = vscode.commands.registerCommand('go-errutil.return', () => {
-		// vscode.window.showInformationMessage('yas!');
+  const disposable = vscode.commands.registerCommand('go-errutil.return', () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       return;
@@ -27,7 +26,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     const returnTypes = extractReturnTypes(lastFuncMatch[1]);
-    console.log("got", returnTypes);
 
     if (returnTypes.length === 0 || returnTypes[returnTypes.length - 1] !== 'error') {
       vscode.window.showErrorMessage('Function does not return error');
@@ -39,9 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     // Insert only the return statement with the correct values and errutil.With(err)
-    const snippet = new vscode.SnippetString(
-      `return ${emptyValues}errutil.With(err)`
-    );
+    const snippet = new vscode.SnippetString(`return ${emptyValues}errutil.With(err)`);
 
     editor.insertSnippet(snippet, position);
 	});
